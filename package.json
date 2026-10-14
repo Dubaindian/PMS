@@ -1,0 +1,1 @@
+{"name":"mahy-khoory-pms-workflow","version":"1.0.0","private":true,"scripts":{"start":"node server.js","dev":"node --watch server.js"},"dependencies":{"@azure/identity":"latest","better-sqlite3":"latest","exceljs":"latest","express":"latest","multer":"latest","pdfkit":"latest"}}
