@@ -1,29 +1,23 @@
-# PMS Workflow Web App - Vercel runtime fix
+# PMS Vercel Run Fix
 
-## What was fixed
+This version removes the native `better-sqlite3` dependency and removes the deprecated `builds` configuration that appeared in the Vercel build warnings.
 
-- Runtime data and uploads now use `os.tmpdir()` instead of `/var/task/data` and `/var/task/uploads`.
-- The Express app is exported with `module.exports = app` for Vercel.
-- `app.listen()` runs only during local execution.
-- `vercel.json` routes requests to the Vercel Node function.
-- A health endpoint is available at `/api/health`.
+## Replace the repository
 
-## Replace the GitHub repository
+1. Extract this ZIP.
+2. Replace all existing GitHub repository files with the extracted files.
+3. Commit and push.
+4. In Vercel, redeploy without using the old build cache.
+5. Keep Framework Preset as **Other**. Do not specify a custom Build Command or Output Directory.
 
-Replace the existing repository files with the contents of this ZIP, commit, push, and redeploy in Vercel.
+## Environment variables
 
-## Vercel environment variables
+Set `BASE_URL`, `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, and `MAIL_SENDER` in Vercel.
 
-Set these variables for Production, Preview, and Development as needed:
+## Test
 
-- `BASE_URL` = your production Vercel URL, without a trailing slash
-- `AZURE_TENANT_ID`
-- `AZURE_CLIENT_ID`
-- `AZURE_CLIENT_SECRET`
-- `MAIL_SENDER`
+Open `/api/health`. The response should show `ok: true` and `nativeSqlite: false`.
 
-The Entra application requires Microsoft Graph `Mail.Send` application permission with admin consent.
+## Storage warning
 
-## Important storage limitation
-
-This package fixes the reported startup error. On Vercel, `/tmp` is temporary. Therefore SQLite records, uploaded attachments, and generated PDFs are not guaranteed to persist between serverless invocations or deployments. For production use, replace SQLite with a hosted PostgreSQL database and store attachments/PDFs in persistent object storage.
+This package is designed to build and start on Vercel without native SQLite. It uses Vercel's temporary writable directory. Temporary records are not guaranteed to persist between function instances. For durable production approvals, connect the application to a hosted database and object storage.
