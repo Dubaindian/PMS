@@ -1,30 +1,29 @@
-# MAHY KHOORY PMS Workflow Web App
+# PMS Workflow Web App - Vercel runtime fix
 
-This is a server-backed PMS application. Unlike the earlier standalone HTML prototype, it stores evaluations in SQLite, emails each approver in sequence, records approval history, creates a filled PDF after final approval, and exports all captured fields to Excel.
+## What was fixed
 
-## Setup
+- Runtime data and uploads now use `os.tmpdir()` instead of `/var/task/data` and `/var/task/uploads`.
+- The Express app is exported with `module.exports = app` for Vercel.
+- `app.listen()` runs only during local execution.
+- `vercel.json` routes requests to the Vercel Node function.
+- A health endpoint is available at `/api/health`.
 
-1. Install Node.js 20 or later.
-2. Copy `.env.example` to `.env` and set the Microsoft Entra application values.
-3. In Entra ID, create an app registration and grant Microsoft Graph **Mail.Send application permission**, then grant admin consent.
-4. Set `MAIL_SENDER` to the licensed/shared mailbox used to send PMS notifications.
-5. Set `BASE_URL` to the HTTPS address reachable by approvers. Approval links cannot work for other users when BASE_URL is localhost.
-6. Run:
+## Replace the GitHub repository
 
-   npm install
-   npm start
+Replace the existing repository files with the contents of this ZIP, commit, push, and redeploy in Vercel.
 
-7. Open the BASE_URL in a browser.
+## Vercel environment variables
 
-## Production notes
+Set these variables for Production, Preview, and Development as needed:
 
-- Put the app behind HTTPS and Microsoft Entra sign-in before production use.
-- Restrict Graph application mailbox access to the PMS sender mailbox using your tenant's Exchange application access controls.
-- Back up `data/pms.db` and the `uploads` folder.
-- The app accepts up to 10 attachments, 15 MB each.
-- Approval links are random one-time-stage tokens. Once a step advances, the previous link no longer works.
+- `BASE_URL` = your production Vercel URL, without a trailing slash
+- `AZURE_TENANT_ID`
+- `AZURE_CLIENT_ID`
+- `AZURE_CLIENT_SECRET`
+- `MAIL_SENDER`
 
-## Outputs
+The Entra application requires Microsoft Graph `Mail.Send` application permission with admin consent.
 
-- Final PDF: shown in the register after every approver approves and also emailed to the initiator.
-- Excel: **Export all fields to Excel** includes employee name, every form field, ratings/comments, workflow, current status, and full approval history.
+## Important storage limitation
+
+This package fixes the reported startup error. On Vercel, `/tmp` is temporary. Therefore SQLite records, uploaded attachments, and generated PDFs are not guaranteed to persist between serverless invocations or deployments. For production use, replace SQLite with a hosted PostgreSQL database and store attachments/PDFs in persistent object storage.
